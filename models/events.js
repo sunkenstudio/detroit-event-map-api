@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const eventSchema = new Schema({
+  _id: { type: Schema.Types.ObjectId },
   created_at: {
     type: Date,
     required: true,
@@ -17,14 +18,12 @@ const eventSchema = new Schema({
     required: true,
   },
   start_date: {
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now(),
   },
   end_date: {
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now(),
   },
   date: {
     type: String,

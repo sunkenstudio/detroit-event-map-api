@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Events } from "../models/events.js";
+import mongoose from "mongoose";
 
 const router = Router();
 // Get all
@@ -120,9 +121,10 @@ router.delete("/:id", getEvent, async (req, res) => {
 
 async function getEvent(req, res, next) {
   let event;
+  const id = new mongoose.Types.ObjectId(req.params.id);
   try {
-    event = await Events.findById(req.params.id);
-    if (!user) {
+    event = await Events.findById(id);
+    if (!event) {
       return res.status(404).json({ message: "cannot find user" });
     }
   } catch (err) {
