@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const eventSchema = new Schema({
+export const eventSchema = new Schema({
+  _id: { type: Schema.Types.ObjectId },
   created_at: {
     type: Date,
     required: true,
@@ -14,17 +15,18 @@ const eventSchema = new Schema({
   },
   img: {
     type: String,
-    required: true,
+    required: false,
+    default: "",
   },
   start_date: {
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now(),
+    default: "1991-01-01 00:00:00",
   },
   end_date: {
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now(),
+    default: "1991-01-01 00:00:00",
   },
   date: {
     type: String,
@@ -32,7 +34,7 @@ const eventSchema = new Schema({
   },
   desc: {
     type: String,
-    required: true,
+    required: false,
   },
   url: {
     type: String,
@@ -51,6 +53,14 @@ const eventSchema = new Schema({
     type: Number,
     required: true,
     default: 0,
+  },
+  location: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: String,
+    required: false,
   },
 });
 
