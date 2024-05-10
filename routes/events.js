@@ -1,13 +1,18 @@
 import { Router } from "express";
 import { Events, eventSchema } from "../models/events.js";
 import mongoose from "mongoose";
+import moment from "moment/moment.js";
 
 const router = Router();
 // Get all
 router.get("/", async (req, res) => {
   try {
+    const today = moment();
     const events = await Events.find();
-    res.status(200).json(events);
+    const filtered = events.filter((i) =>
+      moment(i.date, "YYYY-MM-DD").isSameOrAfter(today, "day")
+    );
+    res.status(200).json(filtered);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -59,9 +64,17 @@ router.get("/:id", getEvent, async (req, res) => {
 
 // Create one
 router.post("/", async (req, res) => {
+  const { token, events } = req.body;
+  const authToken = process.env.AUTH_TOKEN;
+  if (token !== authToken) {
+    res
+      .status(401)
+      .json({ message: "Please cut that shit out. I have no money." });
+  }
+
   const Event = mongoose.model("Event", eventSchema);
   try {
-    await Event.insertMany(req.body);
+    await Event.insertMany(events);
     res.status(201).send({ message: "success" });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -70,6 +83,13 @@ router.post("/", async (req, res) => {
 
 // Update one
 router.patch("/:id", getEvent, async (req, res) => {
+  const { token } = req.body;
+  const authToken = process.env.AUTH_TOKEN;
+  if (token !== authToken) {
+    res
+      .status(401)
+      .json({ message: "Please cut that shit out. I have no money." });
+  }
   const {
     title,
     img,
@@ -122,6 +142,13 @@ router.patch("/:id", getEvent, async (req, res) => {
 
 // Delete one
 router.delete("/:id", getEvent, async (req, res) => {
+  const { token } = req.body;
+  const authToken = process.env.AUTH_TOKEN;
+  if (token !== authToken) {
+    res
+      .status(401)
+      .json({ message: "Please cut that shit out. I have no money." });
+  }
   try {
     await res.event.deleteOne();
     res.json({ message: "event deleted" });
@@ -131,6 +158,13 @@ router.delete("/:id", getEvent, async (req, res) => {
 });
 
 router.delete("/", async (req, res) => {
+  const { token } = req.body;
+  const authToken = process.env.AUTH_TOKEN;
+  if (token !== authToken) {
+    res
+      .status(401)
+      .json({ message: "Please cut that shit out. I have no money." });
+  }
   try {
     const Event = mongoose.model("Event", eventSchema);
     await Event.deleteMany({});
