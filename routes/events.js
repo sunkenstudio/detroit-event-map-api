@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Events } from "../models/events.js";
+import { Events, eventSchema } from "../models/events.js";
 import mongoose from "mongoose";
 
 const router = Router();
@@ -23,34 +23,45 @@ router.get("/:id", getEvent, async (req, res) => {
 });
 
 // Create one
-router.post("/", async (req, res) => {
-  const {
-    title,
-    img,
-    start_date,
-    end_date,
-    date,
-    desc,
-    url,
-    address,
-    lat,
-    lng,
-  } = req.body;
-  const event = new Events({
-    title,
-    img,
-    start_date,
-    end_date,
-    date,
-    desc,
-    url,
-    address,
-    lat,
-    lng,
-  });
+// router.post("/", async (req, res) => {
+//   const {
+//     title,
+//     img,
+//     start_date,
+//     end_date,
+//     date,
+//     desc,
+//     url,
+//     address,
+//     lat,
+//     lng,
+//   } = req.body;
+//   const event = new Events({
+//     title,
+//     img,
+//     start_date,
+//     end_date,
+//     date,
+//     desc,
+//     url,
+//     address,
+//     lat,
+//     lng,
+//   });
 
+//   try {
+//     const newEvent = await event.save();
+//     res.status(201).send({ message: "success" });
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// });
+
+// Create one
+router.post("/", async (req, res) => {
+  const Event = mongoose.model("Event", eventSchema);
   try {
-    const newEvent = await event.save();
+    await Event.insertMany(req.body);
     res.status(201).send({ message: "success" });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -116,6 +127,19 @@ router.delete("/:id", getEvent, async (req, res) => {
     res.json({ message: "event deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete("/", async (req, res) => {
+  try {
+    const Event = mongoose.model("Event", eventSchema);
+    await Event.deleteMany({});
+    res.status(200).json({ message: "All records deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting records:", err);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting records." });
   }
 });
 
