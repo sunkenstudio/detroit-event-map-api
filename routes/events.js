@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { Events } from "../models/events.js";
+import { Events, eventSchema } from "../models/events.js";
+import mongoose from "mongoose";
 
 const router = Router();
 // Get all
@@ -22,34 +23,45 @@ router.get("/:id", getEvent, async (req, res) => {
 });
 
 // Create one
-router.post("/", async (req, res) => {
-  const {
-    title,
-    img,
-    start_date,
-    end_date,
-    date,
-    desc,
-    url,
-    address,
-    lat,
-    lng,
-  } = req.body;
-  const event = new Events({
-    title,
-    img,
-    start_date,
-    end_date,
-    date,
-    desc,
-    url,
-    address,
-    lat,
-    lng,
-  });
+// router.post("/", async (req, res) => {
+//   const {
+//     title,
+//     img,
+//     start_date,
+//     end_date,
+//     date,
+//     desc,
+//     url,
+//     address,
+//     lat,
+//     lng,
+//   } = req.body;
+//   const event = new Events({
+//     title,
+//     img,
+//     start_date,
+//     end_date,
+//     date,
+//     desc,
+//     url,
+//     address,
+//     lat,
+//     lng,
+//   });
 
+//   try {
+//     const newEvent = await event.save();
+//     res.status(201).send({ message: "success" });
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// });
+
+// Create one
+router.post("/", async (req, res) => {
+  const Event = mongoose.model("Event", eventSchema);
   try {
-    const newEvent = await event.save();
+    await Event.insertMany(req.body);
     res.status(201).send({ message: "success" });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -118,11 +130,25 @@ router.delete("/:id", getEvent, async (req, res) => {
   }
 });
 
+router.delete("/", async (req, res) => {
+  try {
+    const Event = mongoose.model("Event", eventSchema);
+    await Event.deleteMany({});
+    res.status(200).json({ message: "All records deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting records:", err);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting records." });
+  }
+});
+
 async function getEvent(req, res, next) {
   let event;
+  const id = new mongoose.Types.ObjectId(req.params.id);
   try {
-    event = await Events.findById(req.params.id);
-    if (!user) {
+    event = await Events.findById(id);
+    if (!event) {
       return res.status(404).json({ message: "cannot find user" });
     }
   } catch (err) {

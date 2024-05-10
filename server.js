@@ -2,6 +2,8 @@ import * as dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import { usersRouter } from "./routes/users.js";
+import { eventsRouter } from "./routes/events.js";
+import cors from "cors";
 
 dotenv.config();
 
@@ -14,10 +16,12 @@ db.on("error", (error) => console.error(error));
 db.once("open", () => console.log("Connected to db"));
 
 app.use(express.json());
+app.use(cors());
 
 const BASE_URL = "/api";
 
 app.use(BASE_URL + "/users", usersRouter);
+app.use(BASE_URL + "/events", eventsRouter);
 
 app.get(BASE_URL, (req, res) => {
   res.send("get out");
