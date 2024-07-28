@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Events, eventSchema } from "../models/events.js";
+import { Users } from "../models/users.js";
 import mongoose from "mongoose";
 import moment from "moment/moment.js";
 
@@ -27,54 +28,23 @@ router.get("/:id", getEvent, async (req, res) => {
   }
 });
 
-// Create one
-// router.post("/", async (req, res) => {
-//   const {
-//     title,
-//     img,
-//     start_date,
-//     end_date,
-//     date,
-//     desc,
-//     url,
-//     address,
-//     lat,
-//     lng,
-//   } = req.body;
-//   const event = new Events({
-//     title,
-//     img,
-//     start_date,
-//     end_date,
-//     date,
-//     desc,
-//     url,
-//     address,
-//     lat,
-//     lng,
-//   });
-
-//   try {
-//     const newEvent = await event.save();
-//     res.status(201).send({ message: "success" });
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// });
-
-// Create one
+// Create a user event
 router.post("/", async (req, res) => {
-  const { token, events } = req.body;
+  const { token, event, email } = req.body;
   const authToken = process.env.AUTH_TOKEN;
   if (token !== authToken) {
     res
       .status(401)
       .json({ message: "Please cut that shit out. I have no money." });
   }
-
+  const user = await Users.findOne({email});
+  if(user.is_blocked){
+    res.status(200).send({message:'blocked'});
+  }
+  
   const Event = mongoose.model("Event", eventSchema);
   try {
-    await Event.insertMany(events);
+    await Event.create({...event, user_id: user._id });
     res.status(201).send({ message: "success" });
   } catch (err) {
     res.status(400).json({ message: err.message });
