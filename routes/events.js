@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import moment from "moment/moment.js";
 
 const router = Router();
+
 // Get all
 router.get("/", async (req, res) => {
   try {
@@ -18,6 +19,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 // Get one
 router.get("/:id", getEvent, async (req, res) => {
   try {
@@ -28,16 +30,22 @@ router.get("/:id", getEvent, async (req, res) => {
   }
 });
 
+// Get user events
+router.get('/user/:id', async (req, res)=>{
+  const userId = req.params.id;
+  try{
+    const events = await Events.find({user_id: userId});
+    res.status(200).send({events});
+  } catch(err){
+    res.status(500).json({ message: err.message });
+  }
+})
+
 // Create a user event
 router.post("/", async (req, res) => {
-  const { token, event, email } = req.body;
-  const authToken = process.env.AUTH_TOKEN;
-  if (token !== authToken) {
-    res
-      .status(401)
-      .json({ message: "Please cut that shit out. I have no money." });
-  }
-  const user = await Users.findOne({email});
+  const { event, id } = req.body;
+  const user = await Users.findById(id);
+
   if(user.is_blocked){
     res.status(200).send({message:'blocked'});
   }
