@@ -11,6 +11,7 @@ export const userSchema = new Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   is_blocked:{
     type: Boolean,
