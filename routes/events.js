@@ -135,7 +135,6 @@ router.delete("/:id", getEvent, async (req, res) => {
   const eventId = req.params.id;
   const { userId } = req.body;
   const event = await Events.findById({_id: eventId});
-  console.log(eventId, userId);
   if(!event){
     res
       .status(400)
