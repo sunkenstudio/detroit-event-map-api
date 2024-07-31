@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { Events, eventSchema } from "../models/events.js";
+import { Users } from "../models/users.js";
 import mongoose from "mongoose";
 import moment from "moment/moment.js";
 
 const router = Router();
+
 // Get all
 router.get("/", async (req, res) => {
   try {
@@ -17,6 +19,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 // Get one
 router.get("/:id", getEvent, async (req, res) => {
   try {
@@ -27,69 +30,52 @@ router.get("/:id", getEvent, async (req, res) => {
   }
 });
 
-// Create one
-// router.post("/", async (req, res) => {
-//   const {
-//     title,
-//     img,
-//     start_date,
-//     end_date,
-//     date,
-//     desc,
-//     url,
-//     address,
-//     lat,
-//     lng,
-//   } = req.body;
-//   const event = new Events({
-//     title,
-//     img,
-//     start_date,
-//     end_date,
-//     date,
-//     desc,
-//     url,
-//     address,
-//     lat,
-//     lng,
-//   });
-
-//   try {
-//     const newEvent = await event.save();
-//     res.status(201).send({ message: "success" });
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// });
-
-// Create one
-router.post("/", async (req, res) => {
-  const { token, events } = req.body;
-  const authToken = process.env.AUTH_TOKEN;
-  if (token !== authToken) {
-    res
-      .status(401)
-      .json({ message: "Please cut that shit out. I have no money." });
+// Get user events
+router.get('/user/:id', async (req, res)=>{
+  const userId = req.params.id;
+  try{
+    const events = await Events.find({user_id: userId});
+    res.status(200).send({events});
+  } catch(err){
+    res.status(500).json({ message: err.message });
   }
+})
 
+// Create a user event
+router.post("/", async (req, res) => {
+  const { event, id } = req.body;
+  const user = await Users.findById(id);
+
+  if(user.is_blocked){
+    res.status(200).send({message:'blocked'});
+  }
+  
   const Event = mongoose.model("Event", eventSchema);
   try {
-    await Event.insertMany(events);
+    await Event.create({...event, user_id: user._id });
     res.status(201).send({ message: "success" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-// Update one
-router.patch("/:id", getEvent, async (req, res) => {
-  const { token } = req.body;
-  const authToken = process.env.AUTH_TOKEN;
-  if (token !== authToken) {
+// Update user event
+router.post("/:id", getEvent, async (req, res) => {
+  const eventId = req.params.id;
+  const { userId } = req.body;
+  const event = await Events.findById({_id: eventId});
+  if(!event){
+    res
+      .status(400)
+      .json({ message: "Event not found." });
+  }
+
+  if(event.user_id !== userId){
     res
       .status(401)
-      .json({ message: "Please cut that shit out. I have no money." });
+      .json({ message: "Access denied." });
   }
+
   const {
     title,
     img,
@@ -101,40 +87,44 @@ router.patch("/:id", getEvent, async (req, res) => {
     address,
     lat,
     lng,
+    price,
   } = req.body;
   if (title) {
-    res.event.title = title;
+    event.title = title;
   }
   if (img) {
-    res.event.img = img;
+    event.img = img;
   }
   if (start_date) {
-    res.event.start_date = start_date;
+    event.start_date = start_date;
   }
   if (end_date) {
-    res.event.end_date = end_date;
+    event.end_date = end_date;
   }
   if (date) {
-    res.event.date = date;
+    event.date = date;
   }
   if (desc) {
-    res.event.desc = desc;
+    event.desc = desc;
   }
   if (url) {
-    res.event.url = url;
+    event.url = url;
   }
   if (address) {
-    res.event.address = address;
+    event.address = address;
   }
   if (lat) {
-    res.event.lat = lat;
+    event.lat = lat;
   }
   if (lng) {
-    res.event.lng = lng;
+    event.lng = lng;
+  }
+  if (price) {
+    event.price = price;
   }
   try {
-    const updatedEvent = await res.event.save();
-    res.json(updatedEvent);
+    const updatedEvent = await event.save();
+    res.status(200).json({updatedEvent})
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -142,38 +132,25 @@ router.patch("/:id", getEvent, async (req, res) => {
 
 // Delete one
 router.delete("/:id", getEvent, async (req, res) => {
-  const { token } = req.body;
-  const authToken = process.env.AUTH_TOKEN;
-  if (token !== authToken) {
+  const eventId = req.params.id;
+  const { userId } = req.body;
+  const event = await Events.findById({_id: eventId});
+  if(!event){
+    res
+      .status(400)
+      .json({ message: "Event not found." });
+  }
+
+  if(event.user_id !== userId){
     res
       .status(401)
-      .json({ message: "Please cut that shit out. I have no money." });
+      .json({ message: "Access denied." });
   }
   try {
-    await res.event.deleteOne();
+    await event.deleteOne();
     res.json({ message: "event deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
-  }
-});
-
-router.delete("/", async (req, res) => {
-  const { token } = req.body;
-  const authToken = process.env.AUTH_TOKEN;
-  if (token !== authToken) {
-    res
-      .status(401)
-      .json({ message: "Please cut that shit out. I have no money." });
-  }
-  try {
-    const Event = mongoose.model("Event", eventSchema);
-    await Event.deleteMany({});
-    res.status(200).json({ message: "All records deleted successfully." });
-  } catch (err) {
-    console.error("Error deleting records:", err);
-    res
-      .status(500)
-      .json({ error: "An error occurred while deleting records." });
   }
 });
 

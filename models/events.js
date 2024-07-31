@@ -3,11 +3,15 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 export const eventSchema = new Schema({
-  _id: { type: Schema.Types.ObjectId },
   created_at: {
     type: Date,
     required: true,
     default: Date.now(),
+  },
+  user_id:{
+    type: String,
+    required: false,
+    default: "",
   },
   title: {
     type: String,
@@ -62,6 +66,11 @@ export const eventSchema = new Schema({
     type: String,
     required: false,
   },
+  is_hidden:{
+    type: Boolean,
+    required: true,
+    default: false,
+  }
 });
 
 export const Events = mongoose.model("Events", eventSchema);
