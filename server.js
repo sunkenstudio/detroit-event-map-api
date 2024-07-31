@@ -37,7 +37,7 @@ app.use(BASE_URL + "/events", eventsRouter);
 app.get(BASE_URL + '/auth/google', passport.authenticate('google'));
 app.get(BASE_URL + "/auth/google/callback", passport.authenticate('google',{ session: false }), (req,res)=>{
   const id = req.user._id;
-  res.redirect(`http://localhost:3000/?id=${id}`);
+  res.redirect(`https://detroiteventmap.com/?id=${id}`);
 });
 
 app.get(BASE_URL, (req, res) => {
