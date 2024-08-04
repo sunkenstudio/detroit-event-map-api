@@ -59,6 +59,18 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Create scraped events
+router.post("/scrape", async (req, res) => {
+  const {events} = req.body;
+  const Event = mongoose.model("Event", eventSchema);
+  try {
+    await Event.insertMany(events);
+    res.status(201).send({ message: "success" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 // Update user event
 router.post("/:id", getEvent, async (req, res) => {
   const eventId = req.params.id;
